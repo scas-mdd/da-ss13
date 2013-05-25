@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Iterator;
+
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +18,7 @@ public class ElevationService {
 		String request = "http://maps.googleapis.com/maps/api/geocode/json?address="+address+"&sensor=true";
 		JSONObject jsonObject = new JSONObject(connect(request));
 		JSONArray array = jsonObject.getJSONArray("results");
-		//System.out.println(array.getJSONObject(0).get("geometry"));
+		//System.out.println(array);
 		JSONObject geometry = array.getJSONObject(0).getJSONObject("geometry");
 		JSONObject location = geometry.getJSONObject("location");
 		String lng = location.get("lng").toString();
@@ -36,17 +36,13 @@ public class ElevationService {
 	}
 	
 	public String connect(String _url) throws IOException{
+		StringBuffer bufferString = new StringBuffer();
 		URL url = new URL(_url);
 		URLConnection urlConnection = url.openConnection();
 		try{
 			urlConnection.setConnectTimeout(3000);
 			urlConnection.setReadTimeout(5000);
 			urlConnection.connect();
-		}catch(SocketTimeoutException ex){
-			System.out.println("Connection timeout");
-		}
-				StringBuffer bufferString = new StringBuffer();
-		try{
 			BufferedReader bufferedReader;
 			bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 			String line;
@@ -54,8 +50,12 @@ public class ElevationService {
 				bufferString.append(line);
 			}
 			bufferedReader.close();
-		} catch (IOException e) {
-			
+		}
+		catch(SocketTimeoutException ex){
+			System.out.println("Connection timeout");
+		}
+		catch (IOException e) {
+			System.out.println("IOException "+e);
 		}
 		return bufferString.toString();
 	}
@@ -74,8 +74,8 @@ public class ElevationService {
 	
 	
 	public static void main(String [] args) throws IOException{
-		String address1 = "31694 Ponderosa Way, Evergreen CO USA";
-		String address2 = "Agricultori 86, Bucharest, Romania";
+		String address1 = "Munich, Germany";
+		String address2 = "Los Angeles, CA, USA";
 		System.out.println(new ElevationService().getElevationDifference(address1, address2));
 	}
 }
